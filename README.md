@@ -154,8 +154,8 @@ where $\hat{q}_{c}(\mathbf{x})=\frac{e^{\hat{o}_{c}(\mathbf{x}) / T}}{\sum_{j=1}
 $$
 \begin{align}
 \min_{\theta} &\quad\mathrm{KL}\left(\hat{q}_{c}(\mathbf{x}\mid \hat\theta)\mid q_{c}(\mathbf{x}\mid \theta)\right)\\
-=\min_{\theta}&\quad \sum_{c=1}^{C}\left\{\hat{q}_{c}(\mathbf{x}) \log \left(\hat{q}_{c}(\mathbf{x})\right)-\hat{q}_{c}(\mathbf{x}) \log \left(q_{c}(\mathbf{x})\right)\right\}\\
-=\min_\theta &\quad \sum_{c=1}^{C}-\hat{q}_{c}(\mathbf{x}) \log \left(q_{c}(\mathbf{x})\right).
+=\min_{\theta}&\quad \sum_{c=1}^{C}\left\{\hat{q}_{c}(\mathbf{x}\mid \hat{\theta}) \log \left(\hat{q}_{c}(\mathbf{x} \mid \hat{\theta})\right)-\hat{q}_{c}(\mathbf{x}\mid \hat{\theta}) \log \left(q_{c}(\mathbf{x}\mid \theta)\right)\right\}\\
+=\min_\theta &\quad \sum_{c=1}^{C}-\hat{q}_{c}(\mathbf{x}\mid \hat{\theta}) \log \left(q_{c}(\mathbf{x})\mid \theta\right).
 \end{align}
 $$
 
@@ -224,7 +224,7 @@ $$
 $$
 and then we multiply the ratio factor with the new prototypes
 $$
-\hat{W}_{new}=\gamma W_{new}.`
+\hat{W}_{new}=\gamma W_{new}.
 $$
  After that the correct logits are
 $$
