@@ -8,7 +8,7 @@ Questions, suggestions, or corrections can be posted as issues.
 
 I'm using `PyTorch 1.11` in `Python 3.9`.
 
-Note: We recommond you install [mathjax-plugin-for-github](https://chrome.google.com/webstore/search/mathjax) read the following math formulas.
+Note: We recommond you install [mathjax-plugin-for-github](https://chrome.google.com/webstore/search/mathjax) read the following math formulas or clone this repository to read locally.
 
 **key words:** `Class-Incremental Learning`, `PyTorch Distributed Training`
 
