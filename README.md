@@ -8,7 +8,7 @@ Questions, suggestions, or corrections can be posted as issues.
 
 I'm using `PyTorch 1.11` in `Python 3.9`.
 
-
+Note: We recommond you install [mathjax-plugin-for-github](https://chrome.google.com/webstore/search/mathjax) read the following math formulas.
 
 **key words:** `Class-Incremental Learning`, `PyTorch Distributed Training`
 
@@ -148,13 +148,13 @@ $$
 \mathcal{L}_{K D}(\mathbf{x})=\sum_{c=1}^{C}-\hat{q}_{c}(\mathbf{x}) \log \left(q_{c}(\mathbf{x})\right),
 $$
 where $\hat{q}_{c}(\mathbf{x})=\frac{e^{\hat{o}_{c}(\mathbf{x}) / T}}{\sum_{j=1}^{C} e^{\hat{o}_{j}(\mathbf{x}) / T}}$ is the Softmax of the logits divided by the temperature $T$ of the teacher model, and $q_c(\mathbf x)$ is that of the student model. Some beginners might feel confused about the knowledge distillation form and why we sometimes call the above cross-entropy kl-divergence equivalently. Here we provide a brief explanation in a formula. Think why the following equation is correct.
-$$
+
 \begin{align}
 \min_{\theta} &\quad\mathrm{KL}\left(\hat{q}_{c}(\mathbf{x}\mid \hat\theta)\mid q_{c}(\mathbf{x}\mid \theta)\right)\\
 =\min_{\theta}&\quad \sum_{c=1}^{C}\left\{\hat{q}_{c}(\mathbf{x}) \log \left(\hat{q}_{c}(\mathbf{x})\right)-\hat{q}_{c}(\mathbf{x}) \log \left(q_{c}(\mathbf{x})\right)\right\}\\
 =\min_\theta &\quad \sum_{c=1}^{C}-\hat{q}_{c}(\mathbf{x}) \log \left(q_{c}(\mathbf{x})\right).
 \end{align}
-$$
+
 So, where do we find the teacher?
 
 The model itself in the previous phase is a good teacher! We restore the model in the previous phase to provide more supervision of old classes. 
