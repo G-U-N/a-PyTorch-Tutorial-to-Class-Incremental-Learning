@@ -147,13 +147,16 @@ Although we have selected some exemplars to increase the supervision information
 $$
 \mathcal{L}_{K D}(\mathbf{x})=\sum_{c=1}^{C}-\hat{q}_{c}(\mathbf{x}) \log \left(q_{c}(\mathbf{x})\right),
 $$
+
 where $\hat{q}_{c}(\mathbf{x})=\frac{e^{\hat{o}_{c}(\mathbf{x}) / T}}{\sum_{j=1}^{C} e^{\hat{o}_{j}(\mathbf{x}) / T}}$ is the Softmax of the logits divided by the temperature $T$ of the teacher model, and $q_c(\mathbf x)$ is that of the student model. Some beginners might feel confused about the knowledge distillation form and why we sometimes call the above cross-entropy kl-divergence equivalently. Here we provide a brief explanation in a formula. Think why the following equation is correct.
 
+$$
 \begin{align}
 \min_{\theta} &\quad\mathrm{KL}\left(\hat{q}_{c}(\mathbf{x}\mid \hat\theta)\mid q_{c}(\mathbf{x}\mid \theta)\right)\\
 =\min_{\theta}&\quad \sum_{c=1}^{C}\left\{\hat{q}_{c}(\mathbf{x}) \log \left(\hat{q}_{c}(\mathbf{x})\right)-\hat{q}_{c}(\mathbf{x}) \log \left(q_{c}(\mathbf{x})\right)\right\}\\
 =\min_\theta &\quad \sum_{c=1}^{C}-\hat{q}_{c}(\mathbf{x}) \log \left(q_{c}(\mathbf{x})\right).
 \end{align}
+$$
 
 So, where do we find the teacher?
 
