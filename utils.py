@@ -1,4 +1,3 @@
-import argparse
 from collections import deque
 import os
 from collections import defaultdict, deque
@@ -250,51 +249,3 @@ def build_transform(is_train, args):
             t.append(transforms.Normalize(
                 IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD))
         return transforms.Compose(t)
-
-
-def get_args_parser():
-    parser = argparse.ArgumentParser(
-        'Class-Incremental Learning training and evaluation script', add_help=False)
-    parser.add_argument('--seed', default=0, type=int)
-    parser.add_argument('--num_bases', default=50, type=int)
-    parser.add_argument('--increment', default=10, type=int)
-    parser.add_argument('--backbone', default="resnet32", type=str)
-    parser.add_argument('--batch_size', default=128, type=int)
-    parser.add_argument('--input_size', default=32, type=int)
-    parser.add_argument('--color_jitter', default=0.4, type=float)
-    parser.add_argument('--aa', type=str, default='rand-m9-mstd0.5-inc1', metavar='NAME',
-                        help='Use AutoAugment policy. "v0" or "original". " + \
-                             "(default: rand-m9-mstd0.5-inc1)'),
-    parser.add_argument('--reprob', type=float, default=0.0, metavar='PCT',
-                        help='Random erase prob (default: 0.25)')
-    parser.add_argument('--remode', type=str, default='pixel',
-                        help='Random erase mode (default: "pixel")')
-    parser.add_argument('--recount', type=int, default=1,
-                        help='Random erase count (default: 1)')
-    parser.add_argument('--resplit', action='store_true', default=False,
-                        help='Do not random erase first (clean) augmentation split')
-    parser.add_argument('--herding_method', default="barycenter", type=str)
-    parser.add_argument('--memory_size', default=2000, type=int)
-    parser.add_argument('--fixed_memory', default=False, action="store_true")
-    parser.add_argument('--lr', default=0.1, type=float)
-    parser.add_argument('--momentum', default=0.9, type=float)
-    parser.add_argument('--weight_decay', default=5e-4, type=float)
-    parser.add_argument('--num_epochs', default=140, type=int)
-    parser.add_argument('--smooth', default=0.0, type=float)
-    parser.add_argument('--eval_every_epoch', default=5, type=float)
-    parser.add_argument('--dist_url', default='env://',
-                        help='url used to set up distributed training')
-    parser.add_argument('--data_set', default='cifar')
-    parser.add_argument('--data_path', default='/data/data/data/cifar100')
-    parser.add_argument('--lambda_kd', default=0.5, type=float)
-    parser.add_argument('--dynamic_lambda_kd', action="store_true")
-    return parser
-
-
-def init_seed(args):
-    np.random.seed(args.seed)
-    torch.manual_seed(args.seed)
-    torch.cuda.manual_seed(args.seed)
-    torch.cuda.manual_seed_all(args.seed)
-    torch.backends.cudnn.deterministic = True
-    torch.backends.cudnn.benchmark = False
