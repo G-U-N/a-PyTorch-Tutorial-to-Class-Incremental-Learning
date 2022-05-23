@@ -84,7 +84,7 @@ Avalanche contains various paradigms of incremental learning and is one of the e
 
 # Concepts
 
-* **Online Machine Learning**. Online machine learning is a machine learning method in which data becomes available in a sequential order and is used to update the best predictor for future data at each step, as opposed to batch learning techniques in which data becomes available in a sequential order and is used to update the best predictor for future data at each step, as opposed to batch learning techniques which generate the best predictor by learning on the entire training data set at once.
+* **Online Machine Learning**. Online machine learning is a machine learning method in which data becomes available in a sequential order and is used to update the best predictor for future data at each step, as opposed to batch learning techniques which generate the best predictor by learning on the entire training data set at once.
 * **Class-Incremental Learning (CIL)**. duh.
 * **Catastrophic Interference/Forgetting**. Catastrophic interference, also known as catastrophic forgetting, is the tendency of an [artificial neural network](https://en.wikipedia.org/wiki/Artificial_neural_network) to completely and abruptly forget previously learned information upon learning new information. 
 * **Exemplars/Replay Buffer**.  `Replay Buffer` is commonly used in Deep Reinforcement Learning (DRL).  DRL algorithms, especially off-policy algorithms, use *replay buffers* to store trajectories of experience when executing a policy in an environment.  In the Scenario of CIL, we use a size-limited replay buffer to store a few representative instances of old classes for future training.  
