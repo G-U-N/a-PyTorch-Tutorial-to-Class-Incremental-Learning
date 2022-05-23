@@ -249,12 +249,3 @@ def build_transform(is_train, args):
             t.append(transforms.Normalize(
                 IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD))
         return transforms.Compose(t)
-
-
-def init_seed(args):
-    np.random.seed(args.seed)
-    torch.manual_seed(args.seed)
-    torch.cuda.manual_seed(args.seed)
-    torch.cuda.manual_seed_all(args.seed)
-    torch.backends.cudnn.deterministic = True
-    torch.backends.cudnn.benchmark = False
