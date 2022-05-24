@@ -6,7 +6,7 @@ If you're new to PyTorch, first read [Deep Learning with PyTorch: A 60 Minute Bl
 
 Questions, suggestions, or corrections can be posted as issues.
 
-I'm using `PyTorch 1.11` in `Python 3.9`.
+I'm using `PyTorch 1.11.0+cu113` in `Python 3.9`.
 
 Note: We recommond you install [mathjax-plugin-for-github](https://chrome.google.com/webstore/search/mathjax) read the following math formulas or clone this repository to read locally. Here is a pdf version [README.pdf](README.pdf)
 
