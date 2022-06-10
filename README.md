@@ -336,7 +336,7 @@ At the beginning of a new task, instead of dropping the old classifier and gener
 
 ### CilModel
 
-See `CilMolde`in [`template.py`](template.py).
+See `CilModel`in [`template.py`](template.py).
 
 As we discussed above, the CilModel consists of two parts
 
