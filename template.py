@@ -21,10 +21,10 @@ def get_args_parser():
     parser.add_argument('--input_size', default=32, type=int)
     parser.add_argument('--color_jitter', default=0.4, type=float)
     parser.add_argument('--aa', type=str, default='rand-m9-mstd0.5-inc1', metavar='NAME',
-                        help='Use AutoAugment policy. "v0" or "original". " + \
-                             "(default: rand-m9-mstd0.5-inc1)'),
+                        help='Use AutoAugment policy. "v0" or "original" '
+                             '(default: rand-m9-mstd0.5-inc1)'),
     parser.add_argument('--reprob', type=float, default=0.0, metavar='PCT',
-                        help='Random erase prob (default: 0.25)')
+                        help='Random erase probability (default: 0.0)')
     parser.add_argument('--remode', type=str, default='pixel',
                         help='Random erase mode (default: "pixel")')
     parser.add_argument('--recount', type=int, default=1,
@@ -45,7 +45,6 @@ def get_args_parser():
     parser.add_argument('--data_set', default='cifar')
     parser.add_argument('--data_path', default='/data/data/data/cifar100')
     parser.add_argument('--lambda_kd', default=0.5, type=float)
-    parser.add_argument('--dynamic_lambda_kd', action="store_true")
     return parser
 
 
@@ -79,7 +78,7 @@ def get_backbone(args):
     elif args.backbone == "resnet56":
         backbone = resnet56()
     else:
-        raise NotImplementedError(f'Unknown backbone {args.model}')
+        raise NotImplementedError(f'Unknown backbone {args.backbone}')
 
     return backbone
 
@@ -198,8 +197,12 @@ if __name__ == "__main__":
 
     init_seed(args)
 
-    args.class_order = [68, 56, 78, 8,
-                        23, 84, 90, 65, 74, 76, 40, 89, 3, 92, 55, 9, 26, 80, 43, 38, 58, 70, 77, 1, 85, 19, 17, 50, 28, 53, 13, 81, 45, 82, 6, 59, 83, 16, 15, 44, 91, 41, 72, 60, 79, 52, 20, 10, 31, 54, 37, 95, 14, 71, 96, 98, 97, 2, 64, 66, 42, 22, 35, 86, 24, 34, 87, 21, 99, 0, 88, 27, 18, 94, 11, 12, 47, 25, 30, 46, 62, 69, 36, 61, 7, 63, 75, 5, 32, 4, 51, 48, 73, 93, 39, 67, 29, 49, 57, 33]
+    if args.data_set.lower() == 'cifar':
+        args.class_order = [68, 56, 78, 8,
+                            23, 84, 90, 65, 74, 76, 40, 89, 3, 92, 55, 9, 26, 80, 43, 38, 58, 70, 77, 1, 85, 19, 17, 50, 28, 53, 13, 81, 45, 82, 6, 59, 83, 16, 15, 44, 91, 41, 72, 60, 79, 52, 20, 10, 31, 54, 37, 95, 14, 71, 96, 98, 97, 2, 64, 66, 42, 22, 35, 86, 24, 34, 87, 21, 99, 0, 88, 27, 18, 94, 11, 12, 47, 25, 30, 46, 62, 69, 36, 61, 7, 63, 75, 5, 32, 4, 51, 48, 73, 93, 39, 67, 29, 49, 57, 33]
+    else:
+        # The CIFAR-100 permutation above is invalid for ImageNet-1K.
+        args.class_order = None
     scenario_train, args.nb_classes = build_dataset(is_train=True, args=args)
     scenario_val, _ = build_dataset(is_train=False, args=args)
 
@@ -241,7 +244,7 @@ if __name__ == "__main__":
         model_without_ddp.prev_model_adaption(args.increment_per_task[task_id])
 
         model = torch.nn.parallel.DistributedDataParallel(
-            model_without_ddp, device_ids=[args.rank])
+            model_without_ddp, device_ids=[args.gpu])
 
         optimizer = torch.optim.SGD(model_without_ddp.parameters(
         ), lr=args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
@@ -301,4 +304,3 @@ if __name__ == "__main__":
             *dataset_train.get_raw_samples(), features
         )
         args.known_classes += args.increment_per_task[task_id]
-

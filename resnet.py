@@ -116,7 +116,7 @@ class CifarResNet(nn.Module):
         return x
 
     def forwardFeature(self, x):
-        pass
+        return self.forward(x)
 
 
 def resnet20(num_classes=10):
@@ -125,8 +125,9 @@ def resnet20(num_classes=10):
 
 
 def resnet10mnist(num_classes=10):
-    model = CifarResNet(ResNetBasicblock, 10, num_classes, 1)
-    return model
+    raise ValueError(
+        'CIFAR ResNet uses depths of 6n+2; use resnet20mnist() instead.'
+    )
 
 
 def resnet20mnist(num_classes=10):

@@ -1,6 +1,6 @@
 This is a **[PyTorch](https://pytorch.org) Tutorial to Class-Incremental Learning**.
 
-Basic knowledge of PyTorch, convolutional neural networks is assumed.
+Basic knowledge of PyTorch and convolutional neural networks is assumed.
 
 If you're new to PyTorch, first read [Deep Learning with PyTorch: A 60 Minute Blitz](https://pytorch.org/tutorials/beginner/deep_learning_60min_blitz.html) and [Learning PyTorch with Examples](https://pytorch.org/tutorials/beginner/pytorch_with_examples.html).
 
@@ -8,9 +8,9 @@ Questions, suggestions, or corrections can be posted as issues.
 
 I'm using `PyTorch 1.11.0+cu113` in `Python 3.9`.
 
-Note: We recommond you install [mathjax-plugin-for-github](https://chrome.google.com/webstore/search/mathjax) read the following math formulas or clone this repository to read locally. Here is a pdf version [README.pdf](README.pdf)
+Note: We recommend you install [mathjax-plugin-for-github](https://chrome.google.com/webstore/search/mathjax) to read the following math formulas, or clone this repository to read locally. Here is a PDF version: [README.pdf](README.pdf).
 
-**key words:** `Class-Incremental Learning`, `PyTorch Distributed Training`
+**Keywords:** `Class-Incremental Learning`, `PyTorch Distributed Training`
 
 ---
 
@@ -36,7 +36,7 @@ Note: We recommond you install [mathjax-plugin-for-github](https://chrome.google
 
 
 
-We will be implementing the [Maintaining Discrimination and Fairness in Class Incremental Learning (WA)](https://arxiv.org/abs/1512.02325), a strong fundamental baseline of class-incremental learning methods. 
+We will be implementing [Maintaining Discrimination and Fairness in Class Incremental Learning (WA)](https://arxiv.org/abs/1911.07053), a strong fundamental baseline for class-incremental learning methods.
 
 Our implementation is very efficient and straightforward to understand.  Utilizing relevant open source tools such as [torch.distributed](https://pytorch.org/tutorials/beginner/dist_overview.html), [timm](https://github.com/rwightman/pytorch-image-models), [continuum](https://github.com/Continvvm/continuum), etc., we keep the core code within 100 lines.  We believe that both beginners and researchers in related fields can gain some inspiration from this tutorial.
 
@@ -85,13 +85,13 @@ Avalanche contains various paradigms of incremental learning and is one of the e
 # Concepts
 
 * **Online Machine Learning**. Online machine learning is a machine learning method in which data becomes available in a sequential order and is used to update the best predictor for future data at each step, as opposed to batch learning techniques which generate the best predictor by learning on the entire training data set at once.
-* **Class-Incremental Learning (CIL)**. duh.
+* **Class-Incremental Learning (CIL)**. Classes arrive over a sequence of tasks; at test time, the model must choose among all classes seen so far without being told the task identity.
 * **Catastrophic Interference/Forgetting**. Catastrophic interference, also known as catastrophic forgetting, is the tendency of an [artificial neural network](https://en.wikipedia.org/wiki/Artificial_neural_network) to completely and abruptly forget previously learned information upon learning new information. 
 * **Exemplars/Replay Buffer**.  `Replay Buffer` is commonly used in Deep Reinforcement Learning (DRL).  DRL algorithms, especially off-policy algorithms, use *replay buffers* to store trajectories of experience when executing a policy in an environment.  In the Scenario of CIL, we use a size-limited replay buffer to store a few representative instances of old classes for future training.  
 
 
 - **Rehearsal**. Rehearsal is the process of training with exemplars.
-- **Knowledge Distillation**. Knowledge distillation is the process of transferring knowledge from a teacher [model](https://en.wikipedia.org/wiki/Statistical_model) to a student model.  It was proposed in [Distilling the knowledge in a neural network](https://arxiv.org/abs/1503.02531). The original form of knowledge distillation minimizes the kl-divergence of the output probability distributions between the teacher and student models.  
+- **Knowledge Distillation**. Knowledge distillation is the process of transferring knowledge from a teacher [model](https://en.wikipedia.org/wiki/Statistical_model) to a student model. It was proposed in [Distilling the knowledge in a neural network](https://arxiv.org/abs/1503.02531). The original form minimizes the KL divergence between the teacher and student output distributions.
 - **Calibration**. After training on imbalanced datasets, models typically have a strong tendency to misclassify minority classes into majority classes.  This is unacceptable when minority classes are more important, e.g., Cancer Detection. Calibration aims to achieve a balance between minority classes and majority ones.
 
 If you are still confused about the above concepts, don't worry, we will refer to them again and again later, and you may gradually understand them as you read.
@@ -149,13 +149,13 @@ $$
 \mathcal{L}_{KD}(\mathbf{x})=\sum_{c=1}^{C}-\hat{q}_{c}(\mathbf{x}) \log \left(q_{c}(\mathbf{x})\right),
 $$
 
-where $\hat{q}_{c}(\mathbf{x})=\frac{e^{\hat{o}_{c}(\mathbf{x}) / T}}{\sum_{j=1}^{C} e^{\hat{o}_{j}(\mathbf{x}) / T}}$ is the Softmax of the logits divided by the temperature $T$ of the teacher model, and $q_c(\mathbf x)$ is that of the student model. Some beginners might feel confused about the knowledge distillation form and why we sometimes call the above cross-entropy kl-divergence equivalently. Here we provide a brief explanation in a formula. Think why the following equation is correct.
+where $\hat{q}_{c}(\mathbf{x})=\frac{e^{\hat{o}_{c}(\mathbf{x}) / T}}{\sum_{j=1}^{C} e^{\hat{o}_{j}(\mathbf{x}) / T}}$ is the softmax of the teacher logits divided by the temperature $T$, and $q_c(\mathbf x)$ is that of the student model. With a fixed teacher, minimizing the above cross-entropy is equivalent to minimizing the following KL divergence up to a constant independent of the student parameters.
 
 $$
 \begin{align}
-\min_{\theta} &\quad\mathrm{KL}\left(\hat{q}_{c}(\mathbf{x}\mid \hat\theta)\mid q_{c}(\mathbf{x}\mid \theta)\right)\\
+\min_{\theta} &\quad\mathrm{KL}\left(\hat{q}_{c}(\mathbf{x}\mid \hat\theta)\,\middle\|\,q_{c}(\mathbf{x}\mid \theta)\right)\\
 =\min_{\theta}&\quad \sum_{c=1}^{C}\left\{\hat{q}_{c}(\mathbf{x}\mid \hat{\theta}) \log \left(\hat{q}_{c}(\mathbf{x} \mid \hat{\theta})\right)-\hat{q}_{c}(\mathbf{x}\mid \hat{\theta}) \log \left(q_{c}(\mathbf{x}\mid \theta)\right)\right\}\\
-=\min_\theta &\quad \sum_{c=1}^{C}-\hat{q}_{c}(\mathbf{x}\mid \hat{\theta}) \log \left(q_{c}(\mathbf{x})\mid \theta\right).
+=\min_\theta &\quad \sum_{c=1}^{C}-\hat{q}_{c}(\mathbf{x}\mid \hat{\theta}) \log \left(q_{c}(\mathbf{x}\mid \theta)\right).
 \end{align}
 $$
 
@@ -167,17 +167,16 @@ The model itself in the previous phase is a good teacher! We restore the model i
 <img src="imgs/kd.png">
 </div>
 
-Therefore, the overall loss combines $\mathcal L_{CE}$ and $\mathcal L_{KD}$
+The implementation combines $\mathcal L_{CE}$ and $\mathcal L_{KD}$ as
 $$
-\mathcal{L}(\mathbf{x}, y)=(1-\lambda) \mathcal{L}_{C E}(\mathbf{x}, y)+\lambda \mathcal{L}_{K D}(\mathbf{x}),
+\mathcal{L}(\mathbf{x}, y)=\mathcal{L}_{CE}(\mathbf{x}, y)+\lambda\mathcal{L}_{KD}(\mathbf{x}),
 $$
 
-where $\lambda$ is set to a default value or dynamically set to $\frac{n}{n
-+m}$.
+where $\lambda$ is `--lambda_kd` (0.5 by default).
 
 ## Weight Alignment
 
-Here, to give an explanation of how weight alignment is achieved and why it works, we decouple the classification model into a feature extractor $\phi(\mathbf x)$and a linear classifier $W$ (ignoring bias $\boldsymbol b$).
+To explain weight alignment, we decouple the classification model into a feature extractor $\phi(\mathbf x)$ and a linear classifier $W$ (ignoring bias $\boldsymbol b$).
 
 We take VGG16 as an example.  
 
@@ -195,7 +194,7 @@ Although deep neural networks can be designed as various architectures,  most of
 $$
 \mathbf o= W \phi(\mathbf x),
 $$
-where $\mathbf o$ is the logits (output of the model).
+where $\mathbf o$ is the vector of logits (the model output).
 
 Ignoring the bias, the classifier $W$ is essentially a matrix that represents a linear transform from feature space $\mathbb R^{d}$ to logits space $\mathbb R^{n+m}$, where $d$ is the dimension of the feature space; $n$ is the number of old categories; and $m$ is the number of new categories.  The matrix can be further decomposed into a list of vectors $w_1,w_2,\dots,w_n,w_{n+1},\dots,w_{n+m}$.  We call them prototypes. 
 
@@ -206,7 +205,7 @@ Thus the output logits $\mathbf o$
 $$
 \mathbf o = W\phi(\mathbf x) =\left(\begin{array}{c} W_{old}^T\phi(\mathbf x) \\ W_{new}^T \phi(\mathbf x)\end{array}\right) = \left(\begin{array}{c} w_1^T \phi(\mathbf x) \\ w_2^T \phi(\mathbf x)\\\vdots \\ w_n^T \phi(\mathbf x) \\ w_{n+1}^T \phi(\mathbf x) \\ \vdots \\w_{n+m}^T \phi(\mathbf x) \end{array}\right)
 $$
-From the above decomposition, it is apparent that the absolute logit of the $i$-th class is proportional to the norm of vector $w_i$. Nowadays, state-of-the-art model architectures use ReLU ($\mathrm {ReLU}(x)=\max (x)$)  as the non-linear activation,  leading to models tending to have non-negative hidden features and outputs.  As a result, **it is typical to find that classes with larger norm values of $w$ tend to have larger logits.**
+Because $w_i^T\phi(\mathbf{x})=\lVert w_i\rVert\lVert\phi(\mathbf{x})\rVert\cos\theta_i$, a logit also depends on the feature norm and angle. ReLU is $\mathrm{ReLU}(x)=\max(0,x)$; it can make hidden features non-negative, but logits from a linear classifier can still be negative. Empirically, larger classifier-weight norms often correspond to larger logits in this setting.
 
 
 
@@ -220,7 +219,7 @@ Based on the above analysis, a trivial but effective calibration method is to le
 
 We first calculate the ratio factor of the norms of the old and new classes
 $$
-\gamma=\frac{\operatorname{Mean}\left(\text { Norm }_{\text {old }}\right)}{\operatorname{Mean}\left(\text { Norm }_{n e w}\right)},
+\gamma=\frac{\operatorname{Mean}\left(\text { Norm }_{\text {old }}\right)}{\operatorname{Mean}\left(\text { Norm }_{\text {new}}\right)},
 $$
 and then we multiply the ratio factor with the new prototypes
 $$
@@ -240,13 +239,13 @@ They are meant to provide some context, but **details are best understood direct
 
 ### Dataset
 
-We will use CIFAR100 and ImageNet-100/1000, which are common benchmarks in Class-Incremental Learning. 
+The tutorial's runnable configuration is CIFAR-100. It also includes an ImageNet-1000 data loader, but the supplied CIFAR ResNet is designed for 32×32 images; using a suitable ImageNet backbone is outside the scope of this tutorial. ImageNet-100 additionally requires a separately defined subset and class order.
 
 #### Download
 
-For CIFAR-100, the python scripts will automatically download it. We recommend you test the code with CIFAR-100 since it takes much less computation overhead compared to ImageNet.
+For CIFAR-100, the Python script downloads the data automatically. We recommend testing the code with CIFAR-100 since it requires much less computation than ImageNet.
 
-While for ImageNet-100/1000, you should download the dataset from [Image-net.org](https://image-net.org/) and specify the [DATA_PATH] in the code.
+For ImageNet-1000, download the dataset from [ImageNet](https://image-net.org/) and specify the data path in the code. The directory must contain `train/` and `val/` subdirectories.
 
 ### Data pipeline
 
@@ -265,14 +264,15 @@ scenario = ClassIncremental(
 )
 ```
 
-By utilizing the Class  `ClassIncremental`provided by continuum, we can easily generate the required dataset at any stage.
+By using the `ClassIncremental` class provided by continuum, we can generate the required dataset at each stage.
 
-There are five arguments we are required to specify
+There are five key arguments to specify:
 
-- **dataset**. A PyTorch style dataset (CIFAR100) or a ImageFolder style dataset (ImageNet).
+- **dataset**. A PyTorch-style dataset (CIFAR-100) or an ImageFolder-style dataset (ImageNet).
 - **initial_increment**. The number of classes in the $0$-th phase.
-- **Increment**. The number of classes in the following phases.
-- **class_order**. The order of all the classes. For CIFAR100, it is a permutation of 1, 2, 3,..., 100.
+- **increment**. The number of classes in the following phases.
+- **transformations**. The transforms applied when samples are read.
+- **class_order**. The order of all classes. For CIFAR-100, it is a permutation of the labels 0, 1, 2, ..., 99.
 
 #### Data Transforms
 
@@ -296,7 +296,7 @@ transform = create_transform(
 
 #### PyTorch Sampler and DataLoader
 
-Using the distributed training framework that PyTorch has officially implemented, we only need to pass in a DistributedSampler for the DataLoader. The Sampler automatically allocates data resources to each process, speeding up training.
+With PyTorch distributed training, pass a `DistributedSampler` to each `DataLoader`. The sampler partitions data among processes; synchronized training across those processes provides the throughput improvement.
 
 ```python
 train_sampler = DistributedSampler(
@@ -336,7 +336,7 @@ At the beginning of a new task, instead of dropping the old classifier and gener
 
 ### CilModel
 
-See `CilModel`in [`template.py`](template.py).
+See `CilModel` in [`template.py`](template.py).
 
 As we discussed above, the CilModel consists of two parts
 
@@ -355,7 +355,7 @@ CUDA_VISIBLE_DEVICES=0,1,2,3 torchrun --nproc_per_node=4 template.py
 
 ### Remarks
 
-In my implementation, I use **Stochastic Gradient Descent** in batches of `128` images, with an initial learning rate of `1e−1`, momentum of `0.9`, and `5e-4` weight decay. We set the number of epochs to 170 and use the CosineAnnealingLR with T_max=170. Some of the hyperparameters are inconsistent with the implementation of the original paper, but it does not affect much on the performance.
+This implementation uses **Stochastic Gradient Descent** in batches of `128` images, with an initial learning rate of `1e-1`, momentum `0.9`, and `5e-4` weight decay. It trains for 140 epochs and uses `CosineAnnealingLR` with `T_max=140`. These hyperparameters differ from the original paper and should be reported when comparing results.
 
 With 4 RTX 3090 distributed training, the experiments on CIFAR-100 with base 50 and increment 10 end in 30 minutes.
 

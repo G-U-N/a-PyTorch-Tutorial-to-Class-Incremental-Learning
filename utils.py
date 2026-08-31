@@ -13,10 +13,9 @@ from continuum import ClassIncremental
 from timm.data import create_transform
 from timm.data.constants import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
 from torchvision import transforms
-try:
-    interpolation = torch.transforms.functional.InterpolationMode.BICUBIC
-except:
-    interpolation = 3
+from torchvision.transforms import InterpolationMode
+
+interpolation = InterpolationMode.BICUBIC
 
 
 class SmoothedValue(object):
@@ -228,7 +227,7 @@ def build_transform(is_train, args):
                 transform.transforms[0] = transforms.RandomCrop(
                     args.input_size, padding=4)
 
-            if args.input_size == 32 and args.data_set == 'CIFAR':
+            if args.input_size == 32 and args.data_set.lower() == 'cifar':
                 transform.transforms[-1] = transforms.Normalize(
                     (0.5071, 0.4867, 0.4408), (0.2675, 0.2565, 0.2761))
             return transform
@@ -242,7 +241,7 @@ def build_transform(is_train, args):
             t.append(transforms.CenterCrop(args.input_size))
 
         t.append(transforms.ToTensor())
-        if args.input_size == 32 and args.data_set == 'CIFAR':
+        if args.input_size == 32 and args.data_set.lower() == 'cifar':
             t.append(transforms.Normalize(
                 (0.5071, 0.4867, 0.4408), (0.2675, 0.2565, 0.2761)))
         else:
